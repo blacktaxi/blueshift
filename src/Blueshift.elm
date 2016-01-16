@@ -1,132 +1,106 @@
 module Blueshift where
 
-import String
+{-| A monadic parser combinator library, heavily inspired by Parsec.
 
-type Parser a =
-    Parser (String -> Result String (a, String))
+@docs Parser, parse, succeed, fail, map, andThen, followedBy
+@docs or, apply, end, anyChar, satisfy, char, notChar, many, some
+@docs annotate, string, anyOf, noneOf
 
--- type Parser a =
---     Parser (State -> Success a b -> Failure b -> Success a b -> Failure b -> Parser)
+-}
 
--- type alias Success a b = (a -> State -> Errors -> Parser b)
--- type alias Failure a = (Errors -> Parser a)
---
--- type alias Errors = {
---     errors : List String
--- }
---
--- type alias State = {
---     input : String,
---     position : Int
--- }
+import Blueshift.Core as Impl
 
-runParser : Parser a -> String -> Result String (a, String)
-runParser (Parser run) inp = run inp
+{-| The Parser type.
 
+A value of type `Parser a` is a parser that knows how to parse an `a` from a string.
+
+To make such a value work, we use the `parse` function, by giving it the parser and
+a string to parse:
+
+    integer : Parser Int
+    integer = ...
+
+    parseInt : String -> Result String Int
+    parseInt s = parse integer s
+
+-}
+type alias Parser a = Impl.Parser a
+
+{-| Run a parser with given input, returning the result of parse. -}
 parse : Parser a -> String -> Result String a
-parse p inp =
-  case runParser p inp of
-    Ok (x, _) -> Ok x
-    Err err -> Err err
+parse = Impl.parse
 
+{-| A parser that always succeeds, returning the given value as result. -}
 succeed : a -> Parser a
-succeed x = Parser <| \inp -> Ok (x, inp)
+succeed = Impl.succeed
 
+{-| A parser that always fail with a given error message. -}
 fail : String -> Parser a
-fail err = Parser <| \_ -> Err err
+fail = Impl.fail
 
+{-| Apply a given function to the result of a given parser. -}
 map : (a -> b) -> Parser a -> Parser b
-map f p = Parser <| \inp ->
-  case runParser p inp of
-    Ok (x, more) -> Ok (f x, more)
-    Err err -> Err err
+map = Impl.map
 
-(<$>) : (a -> b) -> Parser a -> Parser b
-(<$>) = map
-
+{-| Run a given parsing computation on the result of a successful parser of a given parser. -}
 andThen : Parser a -> (a -> Parser b) -> Parser b
-andThen p f = Parser <| \inp ->
-  case runParser p inp of
-    Ok (x, more) -> runParser (f x) more
-    Err err -> Err err
+andThen = Impl.andThen
 
-(>>=) : (a -> Parser b) -> Parser a -> Parser b
-(>>=) = flip andThen
-
+{-| Run the first parser and then the second parser, returning only the second result
+(result of the first parser is discarded.) -}
 followedBy : Parser a -> Parser b -> Parser b
-followedBy p q = p `andThen` \_ -> q
+followedBy = Impl.followedBy
 
-combine : Parser a -> Parser b -> Parser b
-combine q w = q `andThen` (always w)
-
+{-| Try running the first parser, returning it's result if it succeeds. If it fails, run the
+second parser. -}
 or : Parser a -> Parser a -> Parser a
-or q w = Parser <| \inp ->
-  case runParser q inp of
-    Ok _ as ok -> ok
-    Err _ -> runParser w inp
+or = Impl.or
 
--- try : Parser a -> Parser a
--- try p = Parser <| \inp ->
-
-
+{-| Combine two parsers by applying the resulting function of the first parser to a resulting
+value of the second parser. -}
 apply : Parser (a -> b) -> Parser a -> Parser b
-apply a p = a `andThen` \f -> p `andThen` \a -> succeed (f a)
+apply = Impl.apply
 
-errMsgExpected : String -> String -> String
-errMsgExpected label inp =
-  "expected " ++ label ++ " at or near '" ++ (String.left 5 inp) ++ "'"
-
+{-| A parser that expects the end of input and fails otherwise. -}
 end : Parser ()
-end = Parser <| \inp ->
-  case inp of
-    "" -> Ok ((), "")
-    _ -> Err <| errMsgExpected "end of input" inp
+end = Impl.end
 
+{-| A parser that expects any character. -}
 anyChar : Parser Char
-anyChar = Parser <| \inp ->
-  case String.uncons inp of
-    Just (c, tail) -> Ok (c, tail)
-    Nothing -> Err <| errMsgExpected "any character" inp
+anyChar = Impl.anyChar
 
+{-| A parser that expects a character that will satisfy a given predicate. -}
 satisfy : (Char -> Bool) -> Parser Char
-satisfy pred =
-  anyChar `andThen` \c ->
-    if pred c
-      then succeed c
-      else fail ("no sat for " ++ String.fromChar c)
+satisfy = Impl.satisfy
 
+{-| A parser that expects a particular character. -}
 char : Char -> Parser Char
-char c = satisfy ((==) c) `annotate` ("'" ++ String.fromChar c ++ "'")
+char = Impl.char
 
+{-| A parser that expects any but a particular character. -}
 notChar : Char -> Parser Char
-notChar c = satisfy ((/=) c)
+notChar = Impl.notChar
 
+{-| Apply a given parser zero or more times, accumulating the results into a list. -}
 many : Parser a -> Parser (List a)
-many p = (some p) `or` (succeed [])
+many = Impl.many
 
+{-| Apply a given parser one or more times, accumulating the results into a list. -}
 some : Parser a -> Parser (List a)
-some p = p `andThen` \v -> many p `andThen` \vs -> succeed (v :: vs)
+some = Impl.some
 
+{-| Annotate a parser but returning a given error message whenever the parser fails. -}
 annotate : Parser a -> String -> Parser a
-annotate p label = Parser <| \inp ->
-  case runParser p inp of
-    Ok _ as ok -> ok
-    Err _ -> Err <| errMsgExpected label inp
+annotate = Impl.annotate
 
+{-| A parser that expects a particular string. -}
 string : String -> Parser String
-string s =
-  let p = Parser <| \inp ->
-    if String.left (String.length s) inp == s
-      then Ok (s, String.dropLeft (String.length s) inp)
-      else Err ""
-  in p `annotate` ("'" ++ s ++ "'")
+string = Impl.string
 
--- anyString : Parser String
--- anyString = Parser <| \inp ->
-
+{-| A parser that expects any of the particular characters from a given string. -}
 anyOf : String -> Parser Char
-anyOf s = satisfy (\x -> String.fromChar x `String.contains` s)
+anyOf = Impl.anyOf
 
--- @TODO called `noneOf` in parsec
-notAnyOf : String -> Parser Char
-notAnyOf s = satisfy (\x -> not <| String.fromChar x `String.contains` s)
+{-| A parser that expects any but one of the particular characters from a given string. -}
+noneOf : String -> Parser Char
+noneOf = Impl.noneOf

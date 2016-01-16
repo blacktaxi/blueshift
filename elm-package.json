@@ -8,7 +8,6 @@
     ],
     "exposed-modules": [
         "Blueshift",
-        "Blueshift.Core",
         "Blueshift.Infix"
     ],
     "dependencies": {
