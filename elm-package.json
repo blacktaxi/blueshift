@@ -6,7 +6,11 @@
     "source-directories": [
         "src"
     ],
-    "exposed-modules": [],
+    "exposed-modules": [
+        "Blueshift",
+        "Blueshift.Core",
+        "Blueshift.Infix"
+    ],
     "dependencies": {
         "deadfoxygrandpa/elm-test": "3.0.1 <= v < 4.0.0",
         "elm-lang/core": "3.0.0 <= v < 4.0.0",

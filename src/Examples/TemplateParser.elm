@@ -1,4 +1,4 @@
-module TemplateParser where
+module Examples.TemplateParser where
 
 import Generator exposing (..)
 import Blueshift exposing (..)

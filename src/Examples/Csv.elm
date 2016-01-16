@@ -1,4 +1,4 @@
-module CSV where
+module Examples.Csv where
 
 import Blueshift exposing (..)
 import String
@@ -7,37 +7,37 @@ import String
    by the end-of-line character (eol). -}
 csvFile : Parser (List (List String))
 csvFile =
-    many line
-    `andThen` \r -> end
-    `andThen` \_ -> succeed r
+  many line
+  `andThen` \r -> end
+  `andThen` \_ -> succeed r
 
 -- Each line contains 1 or more cells, separated by a comma
 line : Parser (List String)
 line =
-    cells
-    `andThen` \r -> eol
-    `andThen` \_ -> succeed r
+  cells
+  `andThen` \r -> eol
+  `andThen` \_ -> succeed r
 
 -- Build up a list of cells.  Try to parse the first cell, then figure out
 -- what ends the cell.
 cells : Parser (List String)
 cells =
-    cellContent `andThen` \first ->
-    remainingCells `andThen` \next ->
-    succeed (first :: next)
+  cellContent `andThen` \first ->
+  remainingCells `andThen` \next ->
+  succeed (first :: next)
 
 -- The cell either ends with a comma, indicating that 1 or more cells follow,
 -- or it doesn't, indicating that we're at the end of the cells for this line
 remainingCells : Parser (List String)
 remainingCells =
-    (char ',' `followedBy` cells)            -- Found comma?  More cells coming
-    `or` (succeed [])                -- No comma?  Return [], no more cells
+  (char ',' `followedBy` cells)            -- Found comma?  More cells coming
+  `or` (succeed [])                -- No comma?  Return [], no more cells
 
 -- Each cell contains 0 or more characters, which must not be a comma or
 -- EOL
 cellContent : Parser String
 cellContent =
-    String.fromList `map` many (notAnyOf ",\n")
+  String.fromList `map` many (notAnyOf ",\n")
 
 -- The end of line character is \n
 eol : Parser Char
