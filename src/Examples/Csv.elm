@@ -37,7 +37,7 @@ remainingCells =
 -- EOL
 cellContent : Parser String
 cellContent =
-  String.fromList `map` many (notAnyOf ",\n")
+  String.fromList `map` many (noneOf ",\n")
 
 -- The end of line character is \n
 eol : Parser Char

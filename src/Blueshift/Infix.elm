@@ -1,26 +1,47 @@
 module Blueshift.Infix
-  ( (<$>)
-  , (>>=)
-  , (<|>)
+  ( (<$>), (>>=), (<|>), (<*>), (<*), (*>), (>>>)
   ) where
 
 {-|
 
-@docs (<$>), (>>=), (<|>)
+@docs (<$>), (>>=), (<|>), (<*>), (<*), (*>), (>>>)
 -}
 
-import Blueshift.Core as Impl
+import Blueshift.Core as Core
 
-type alias Parser a = Impl.Parser a
+type alias Parser a = Core.Parser a
 
-{-| -}
+{-|-}
 (<$>) : (a -> b) -> Parser a -> Parser b
-(<$>) = Impl.map
+(<$>) = Core.map
+infixl 4 <$>
 
-{-| -}
+{-|-}
 (>>=) : (a -> Parser b) -> Parser a -> Parser b
-(>>=) = flip Impl.andThen
+(>>=) = flip Core.andThen
+infixl 1 >>=
 
-{-| -}
+{-|-}
 (<|>) : Parser a -> Parser a -> Parser a
-(<|>) = Impl.or
+(<|>) = Core.or
+infixr 3 <|>
+
+{-|-}
+(<*>) : Parser (a -> b) -> Parser a -> Parser b
+(<*>) = Core.apply
+infixl 4 <*>
+
+{-|-}
+(*>) : Parser a -> Parser b -> Parser b
+(*>) = Core.followedBy
+infixl 4 *>
+
+{-|-}
+(<*) : Parser a -> Parser b -> Parser a
+(<*) p q = p `Core.andThen` \r -> q `Core.andThen` \_ -> Core.succeed r
+infixl 4 <*
+
+{-|-}
+(>>>) : Parser a -> Parser b -> Parser b
+(>>>) = Core.followedBy
+infixl 1 >>>

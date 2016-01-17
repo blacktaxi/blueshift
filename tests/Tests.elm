@@ -1,31 +1,31 @@
 module Main where
 
-import List
 import Task
-
-import Console exposing (..)
+import Console
 import ElmTest exposing (..)
 
 import Examples.Csv as Csv
+import Blueshift exposing (..)
+import Blueshift.Infix exposing (..)
 
-tests : List Test
-tests =
-  [ 0 `equals` 0
-  , test "pass" <| assert True
-  , test "fail" <| assertNotEqual True False
-  ]
-  ++
-  (List.map defaultTest <| assertionList [1..10] [1..10])
-
-csvExampleSuite =
+csvExample : Test
+csvExample =
   suite "CSV example" <|
     [ test "should error properly on invalid input" <|
         assertEqual (Err "a better error message?") (Csv.parseCSV "hi")
     ]
 
-consoleTests : IO ()
+infixOps : Test
+infixOps =
+  suite "Infix operators" <|
+    [ test "*>" <|
+        assertEqual (Ok 6) (parse (char '5' *> succeed 6) "5")
+    ]
+
+consoleTests : Console.IO ()
 consoleTests =
-  consoleRunner csvExampleSuite
+  consoleRunner csvExample
+  `Console.seq` consoleRunner infixOps
 
 port runner : Signal (Task.Task x ())
 port runner = Console.run consoleTests
