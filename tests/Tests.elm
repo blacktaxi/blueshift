@@ -8,6 +8,9 @@ import Examples.Csv as Csv
 import Blueshift exposing (..)
 import Blueshift.Infix exposing (..)
 
+assertParse : Result String a -> Parser a -> String -> Assertion
+assertParse r p input = assertEqual r (parse p input)
+
 csvExample : Test
 csvExample =
   suite "CSV example" <|
@@ -15,17 +18,28 @@ csvExample =
         assertEqual (Err "a better error message?") (Csv.parseCSV "hi")
     ]
 
+primitives : Test
+primitives =
+  suite "Primitive operations" <|
+    [ test "succeed" <| assertParse (Ok "ok") (succeed "ok") "test"
+    , test "fail" <| assertParse (Err "fayl") (fail "fayl") "test"
+    , test "map" <| assertParse (Ok "yay") (succeed "ok" |> map (always "yay")) "test"
+    ]
+
 infixOps : Test
 infixOps =
   suite "Infix operators" <|
-    [ test "*>" <|
-        assertEqual (Ok '2') (parse (char '1' *> char '2') "12")
+    [ test "*>" <| assertParse (Ok '2') (char '1' *> char '2') "12"
     ]
 
 consoleTests : Console.IO ()
 consoleTests =
-  consoleRunner csvExample
-  `Console.seq` consoleRunner infixOps
+  consoleRunner <|
+    suite "All" <|
+      [ primitives
+      , infixOps
+      , csvExample
+      ]
 
 port runner : Signal (Task.Task x ())
 port runner = Console.run consoleTests
