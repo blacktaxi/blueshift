@@ -35,6 +35,9 @@ andThen p f = Parser <| \inp ->
 followedBy : Parser a -> Parser b -> Parser b
 followedBy p q = p `andThen` (always q)
 
+andMap : Parser (a -> b) -> Parser a -> Parser b
+andMap a p = a `andThen` \f -> p `andThen` \a -> succeed (f a)
+
 or : Parser a -> Parser a -> Parser a
 or q w = Parser <| \inp ->
   case runParser q inp of
@@ -43,10 +46,6 @@ or q w = Parser <| \inp ->
 
 -- try : Parser a -> Parser a
 -- try p = Parser <| \inp ->
-
-
-apply : Parser (a -> b) -> Parser a -> Parser b
-apply a p = a `andThen` \f -> p `andThen` \a -> succeed (f a)
 
 errMsgExpected : String -> String -> String
 errMsgExpected label inp =
@@ -57,25 +56,6 @@ end = Parser <| \inp ->
   case inp of
     "" -> Ok ((), "")
     _ -> Err <| errMsgExpected "end of input" inp
-
-anyChar : Parser Char
-anyChar = Parser <| \inp ->
-  case String.uncons inp of
-    Just (c, tail) -> Ok (c, tail)
-    Nothing -> Err <| errMsgExpected "any character" inp
-
-satisfy : (Char -> Bool) -> Parser Char
-satisfy pred =
-  anyChar `andThen` \c ->
-    if pred c
-      then succeed c
-      else fail ("no sat for " ++ String.fromChar c)
-
-char : Char -> Parser Char
-char c = satisfy ((==) c) `annotate` ("'" ++ String.fromChar c ++ "'")
-
-notChar : Char -> Parser Char
-notChar c = satisfy ((/=) c)
 
 many : Parser a -> Parser (List a)
 many p = (some p) `or` (succeed [])
@@ -88,20 +68,3 @@ annotate p label = Parser <| \inp ->
   case runParser p inp of
     Ok _ as ok -> ok
     Err _ -> Err <| errMsgExpected label inp
-
-string : String -> Parser String
-string s =
-  let p = Parser <| \inp ->
-    if String.left (String.length s) inp == s
-      then Ok (s, String.dropLeft (String.length s) inp)
-      else Err ""
-  in p `annotate` ("'" ++ s ++ "'")
-
--- anyString : Parser String
--- anyString = Parser <| \inp ->
-
-anyOf : String -> Parser Char
-anyOf s = satisfy (\x -> String.fromChar x `String.contains` s)
-
-noneOf : String -> Parser Char
-noneOf s = satisfy (\x -> not <| String.fromChar x `String.contains` s)

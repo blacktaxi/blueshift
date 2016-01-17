@@ -19,7 +19,7 @@ infixOps : Test
 infixOps =
   suite "Infix operators" <|
     [ test "*>" <|
-        assertEqual (Ok 6) (parse (char '5' *> succeed 6) "5")
+        assertEqual (Ok '2') (parse (char '1' *> char '2') "12")
     ]
 
 consoleTests : Console.IO ()
