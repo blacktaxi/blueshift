@@ -1,0 +1,18 @@
+{
+  "name": "blueshift.github",
+  "version": "0.0.0",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "cd tests && ./test.sh",
+    "install": "elm package install -y"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blacktaxi/blueshift.git"
+  },
+  "devDependencies": {
+    "elm": "^0.16.0"
+  }
+}
