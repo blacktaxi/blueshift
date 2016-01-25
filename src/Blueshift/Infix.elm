@@ -28,7 +28,7 @@ infixr 3 <|>
 
 {-|-}
 (<*>) : Parser (a -> b) -> Parser a -> Parser b
-(<*>) = Core.apply
+(<*>) = Core.andMap
 infixl 4 <*>
 
 {-|-}

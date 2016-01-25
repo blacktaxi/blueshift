@@ -63,6 +63,19 @@ many p = (some p) `or` (succeed [])
 some : Parser a -> Parser (List a)
 some p = p `andThen` \v -> many p `andThen` \vs -> succeed (v :: vs)
 
+skipMany : Parser a -> Parser ()
+skipMany p = many p `followedBy` succeed ()
+
+skipSome : Parser a -> Parser ()
+skipSome p = some p `followedBy` succeed ()
+
+between : Parser open -> Parser close -> Parser a -> Parser a
+between open close p =
+  open `andThen` \_ ->
+  p `andThen` \x ->
+  close `andThen` \_ ->
+  succeed x
+
 annotate : Parser a -> String -> Parser a
 annotate p label = Parser <| \inp ->
   case runParser p inp of
