@@ -18,7 +18,7 @@ infixl 4 <$>
 
 {-|-}
 (>>=) : (a -> Parser b) -> Parser a -> Parser b
-(>>=) = flip Core.andThen
+(>>=) = Core.andThen
 infixl 1 >>=
 
 {-|-}
