@@ -17,7 +17,7 @@ type alias Parser a = Core.Parser a
 infixl 4 <$>
 
 {-|-}
-(>>=) : (a -> Parser b) -> Parser a -> Parser b
+(>>=) : Parser a -> (a -> Parser b) -> Parser b
 (>>=) = Core.andThen
 infixl 1 >>=
 
