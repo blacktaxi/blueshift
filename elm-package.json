@@ -1,5 +1,5 @@
 {
-    "version": "0.0.1",
+    "version": "1.0.0",
     "summary": "Parser combinator library inspired by Parsec",
     "repository": "https://github.com/blacktaxi/blueshift.git",
     "license": "BSD3",
