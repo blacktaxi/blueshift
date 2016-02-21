@@ -45,3 +45,8 @@ infixl 4 <*
 (>>>) : Parser a -> Parser b -> Parser b
 (>>>) = Core.followedBy
 infixl 1 >>>
+
+{-|-}
+(<?>) : Parser a -> String -> Parser a
+(<?>) = Core.annotate
+infix 0 <?>
