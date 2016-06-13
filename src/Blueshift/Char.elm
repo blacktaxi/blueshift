@@ -1,4 +1,4 @@
-module Blueshift.Char where
+module Blueshift.Char exposing (..)
 
 import Blueshift.Core exposing (..)
 import String

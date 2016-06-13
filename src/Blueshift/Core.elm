@@ -1,4 +1,4 @@
-module Blueshift.Core where
+module Blueshift.Core exposing (..)
 
 import String
 

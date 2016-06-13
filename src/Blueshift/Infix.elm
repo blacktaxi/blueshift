@@ -1,6 +1,6 @@
-module Blueshift.Infix
+module Blueshift.Infix exposing
   ( (<$>), (>>=), (<|>), (<*>), (<*), (*>), (>>>)
-  ) where
+  )
 
 {-|
 

@@ -1,4 +1,4 @@
-module Blueshift where
+module Blueshift exposing (..)
 
 {-| A monadic parser combinator library, heavily inspired by Parsec.
 
